@@ -1,0 +1,8 @@
+# Provide the settings for the backend AI.
+
+[database]
+server = "127.0.0.1"
+dbname = "chai"
+user   = "ai_access"
+pass   = "db_password_here"
+debug  = false
