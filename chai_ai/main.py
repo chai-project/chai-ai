@@ -192,8 +192,6 @@ def cli(config, dbserver, db, username, dbpass_file, debug):  # pylint: disable=
 
 
 if __name__ == "__main__":
-    # cli()
+    cli()
     # for testing in IDE:
-    cli.callback(
-        "/Users/kimbauters/Library/Mobile Documents/com~apple~CloudDocs/CHAI/Programming/Python/CHAI_ai/settings.toml",
-        None, None, None, None, None)
+    # cli.callback("full/path/to/settings.toml", None, None, None, None, None)
