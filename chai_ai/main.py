@@ -98,9 +98,9 @@ def check_for_changes(config: DBConfiguration):
                 profiles = session.query(
                     Profile
                 ).filter(
-                    Profile.homeid == change.home_id
+                    Profile.home_id == change.home_id
                 ).filter(
-                    Profile.profileid == profile_id
+                    Profile.profile_id == profile_id[1]
                 ).all()
 
                 if len(profiles) != 1:
