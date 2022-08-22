@@ -55,21 +55,27 @@ def check_for_changes(config: DBConfiguration):
                 daymask = 2 ** (changed_at.day_of_week - 1)
 
                 # get the last schedule for this home with a timestamp before the setpoint change
-                # TODO: this isn't working! The query should only perform the outer join with entries before change.changed_at .
-                schedule_alias = aliased(Schedule)
+                # BE CAREFUL WITH THIS QUERY:
+                # We need to create a subquery and use that as a table.
+                # However, SQLAlchemy cannot do any 'type checking' and instead relies on the columns from the DB.
+                # We use the modifier .c to access those, but that also means some names, such as home_id, change.
+
+                subquery = session.query(Schedule).filter(Schedule.revision <= change.changed_at).subquery()
+                schedule_alias = aliased(subquery)
+
                 schedules = session.query(
-                    Schedule
+                    subquery
                 ).outerjoin(
                     schedule_alias, and_(
-                        Schedule.home_id == schedule_alias.home_id,
-                        Schedule.revision < schedule_alias.revision,
-                        Schedule.day == schedule_alias.day)
+                        subquery.c.homeid == schedule_alias.c.homeid,
+                        subquery.c.revision < schedule_alias.c.revision,
+                        subquery.c.day == schedule_alias.c.day)
                 ).filter(
-                    schedule_alias.revision == None  # noqa: E711
+                    schedule_alias.c.revision == None  # noqa: E711
                 ).filter(
-                    Schedule.home_id == change.home_id
+                    subquery.c.homeid == change.home_id
                 ).filter(
-                    Schedule.day.op('&')(daymask) != 0
+                    subquery.c.day.op('&')(daymask) != 0
                 ).all()
 
                 if len(schedules) != 1:
@@ -105,7 +111,6 @@ def check_for_changes(config: DBConfiguration):
 
                 # AI COMPONENT
                 # This is where the AI takes over. Note that the code above:
-                #  - still has an error as it does not take the changed_at into account when retrieving the schedule
                 #  - ignores that multiple setpoint changes may have occurred already for the same profile
                 #  - is not fully tested
 
