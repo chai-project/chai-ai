@@ -9,8 +9,9 @@ import tomli
 from sqlalchemy import and_
 from sqlalchemy.orm import aliased
 
+from chai_ai.learning import model_update, model_summary, model_predict
 from db_definitions import SetpointChange, db_engine_manager, db_session_manager, Configuration as DBConfiguration, \
-    Schedule, Profile
+    Schedule, Profile, Log
 
 
 class Configuration:  # pylint: disable=too-few-public-methods, too-many-instance-attributes
@@ -40,6 +41,11 @@ def check_for_changes(config: DBConfiguration):
             ).all()
 
             # the variable 'changes' contains all setpoint changes that still need to be checked
+
+            # To do: add ordering here?
+            # .order_by(
+            #     SetpointChange.changed_at.desc()
+            # )
 
             changes_to_manual = [change for change in changes if change.mode in [2, 3]]
             # manual overrides do not affect the AI, marked them as checked
@@ -115,6 +121,32 @@ def check_for_changes(config: DBConfiguration):
                 #  - is not fully tested
 
                 pass
+
+                # change_price = 17.5  # To do: price needs to come from DB
+                # updated_profile = model_update(profile, change, change_price)
+                #
+                # session.add(updated_profile)
+                #
+                # _, confidence_region = model_summary(updated_profile)
+                # predictions = list(model_predict(updated_profile, range(36)))
+                #
+                # log_entry = Log(
+                #     home=profile.home,
+                #     timestamp=change.changed_at,
+                #     category="PROFILE_CHANGE",
+                #     parameters=[
+                #         change.price,
+                #         change.temperature,
+                #         updated_profile.mean1,
+                #         updated_profile.mean2,
+                #         confidence_region,  # Note: may need to expand this tuple
+                #         predictions  # Note: may need to expand this list of tuples
+                #     ]
+                # )
+                #
+                # session.add(log_entry)
+                #
+                # change.checked = True
 
                 # /AI COMPONENT
 

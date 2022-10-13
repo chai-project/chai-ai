@@ -74,7 +74,7 @@ class Home(Base):
     __tablename__ = "home"
     id = Column(Integer, primary_key=True)
     label = Column(String, nullable=False)
-    revision = Column(TIMESTAMP, nullable=False)
+    revision = Column(TIMESTAMP(timezone=True), nullable=False)
     netatmoID = Column("netatmoid", Integer, ForeignKey("netatmodevice.id"), nullable=False)
     heat_gain = Column("heatgain", Float, nullable=False)
     heat_loss = Column("heatloss", Float, nullable=False)
@@ -88,8 +88,8 @@ class NetatmoReading(Base):
     id = Column(Integer, primary_key=True)
     room_id = Column("roomid", Integer, nullable=False)  # 1 for thermostat temp, 2 for valve temp, 3 for valve %
     netatmo_id = Column("netatmoid", Integer, ForeignKey("netatmodevice.id"), nullable=False)
-    start = Column(DateTime, nullable=False, index=True)
-    end = Column(DateTime, nullable=False, index=True)
+    start = Column(DateTime(timezone=True), nullable=False, index=True)
+    end = Column(DateTime(timezone=True), nullable=False, index=True)
     reading = Column(Float, nullable=False)
     relay: NetatmoDevice = relationship("NetatmoDevice", back_populates="readings")
     idxOneReading = Index("ix_one_reading", id, room_id, start, unique=True)
@@ -99,29 +99,40 @@ class SetpointChange(Base):
     __tablename__ = "setpointchange"
     id = Column(Integer, primary_key=True)
     home_id = Column("homeid", Integer, ForeignKey("home.id"), nullable=False)
-    changed_at = Column("changedat", DateTime, nullable=False)
-    expires_at = Column("expiresat", DateTime, nullable=False)
+    changed_at = Column("changedat", DateTime(timezone=True), nullable=False)
+    expires_at = Column("expiresat", DateTime(timezone=True), nullable=False)
     checked = Column(Boolean, nullable=False)
     duration = Column(Integer)
     mode = Column(Integer, nullable=False)
     temperature = Column(Float)
     home: Home = relationship("Home")
 
+    def __str__(self):
+        return f"""
+        SetpointChange for home {self.home_id} and changed at {self.changed_at}
+          expires at {self.expires_at}
+          checked {self.checked}
+          duration {self.duration}
+          mode {self.mode}
+          temperature {self.temperature}              
+        """
+
 
 class Log(Base):
     __tablename__ = "log"
     id = Column(Integer, primary_key=True)
     home_id = Column("homeid", Integer, ForeignKey("home.id"), nullable=False)
-    timestamp = Column(TIMESTAMP, nullable=False)
+    timestamp = Column(TIMESTAMP(timezone=True), nullable=False)
     category = Column(String, nullable=False)
     parameters = Column(JSON, nullable=False)
+    home: Home = relationship("Home")
 
 
 class Schedule(Base):
     __tablename__ = "schedule"
     id = Column(Integer, primary_key=True)
     home_id = Column("homeid", Integer, ForeignKey("home.id"), nullable=False)
-    revision = Column(TIMESTAMP, nullable=False)
+    revision = Column(TIMESTAMP(timezone=True), nullable=False)
     day = Column(Integer, nullable=False)
     schedule = Column(JSON, nullable=False)
     home: Home = relationship("Home")
@@ -137,8 +148,9 @@ class Profile(Base):
     mean2 = Column(Float, nullable=False)
     variance1 = Column(Float, nullable=False)
     variance2 = Column(Float, nullable=False)
-    correlation = Column(Float, nullable=False)
-    noise_variance = Column("noisevariance", Float, nullable=False)
+    correlation1 = Column(Float, nullable=False)
+    correlation2 = Column(Float, nullable=False)
+    noise_precision = Column("noiseprecision", Float, nullable=False)
     home: Home = relationship("Home")
     setpointChange: SetpointChange = relationship("SetpointChange")
 
@@ -149,6 +161,22 @@ class Profile(Base):
         :return: The temperature based on the model.
         """
         return price * self.mean2 + self.mean1
+
+    def __str__(self):
+        return f"""
+           Profile {self.profile_id} for home {self.home_id} with setpoint {self.setpoint_id}
+             Mean 1: {self.mean1}
+             Mean 2: {self.mean2}
+             Variance 1: {self.variance1}
+             Variance 2: {self.variance2}
+             Correlation 1: {self.correlation1}
+             Correlation 2: {self.correlation2}
+             Noise Precision: {self.noise_precision}
+           """
+
+    @property
+    def correlation(self):
+        return (self.correlation1 + self.correlation2) / 2
 
 
 def get_home(label: str, session: Session) -> Optional[Home]:

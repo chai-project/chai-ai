@@ -14,6 +14,8 @@ setup(
                       "sqlalchemy",  # ORM for database access
                       "tomli",  # TOML configuration file parser
                       "schedule",  # scheduler for periodic tasks
+                      "numpy",  # matrix operations for AI algorithm
+                      "scipy",  # predictive confidence interval
                       ],
     extras_require={
         "compat": ["pylint", "perflint"],  # additional packages for code and performance checking
