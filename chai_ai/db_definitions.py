@@ -105,6 +105,7 @@ class SetpointChange(Base):
     duration = Column(Integer)
     mode = Column(Integer, nullable=False)
     temperature = Column(Float)
+    price_at_change = Column("price", Float)
     home: Home = relationship("Home")
 
     def __str__(self):

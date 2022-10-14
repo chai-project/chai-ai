@@ -34,29 +34,32 @@ def check_for_changes(config: DBConfiguration):
     # see which setpoint changes have occurred
     with db_engine_manager(config) as engine:
         with db_session_manager(engine) as session:
-            changes = session.query(
-                SetpointChange
-            ).filter(
-                SetpointChange.checked == False  # noqa: E711
-            ).all()
 
-            # the variable 'changes' contains all setpoint changes that still need to be checked
+            # see if there are any further changes to handle
+            pending_changes = True
+            while pending_changes:
+                change = session.query(
+                    SetpointChange
+                ).filter(
+                    SetpointChange.checked == False  # noqa: E711
+                ).order_by(
+                    SetpointChange.changed_at.asc()
+                ).first()
 
-            # To do: add ordering here?
-            # .order_by(
-            #     SetpointChange.changed_at.desc()
-            # )
+                # get out of the loop if we are done with all changes
+                if change is None:
+                    pending_changes = False
+                    continue
 
-            changes_to_manual = [change for change in changes if change.mode in [2, 3]]
-            # manual overrides do not affect the AI, marked them as checked
-            for change in changes_to_manual:
-                change.checked = True
+                # manual overrides do not affect the AI, marked them as checked and continue
+                if change.mode in [2, 3]:
+                    change.checked = True
+                    continue
 
-            # what remains are all the setpoint changes in auto mode
-            changes: [SetpointChange] = [change for change in changes if change.mode == 1]
+                # the instance 'change' is a setpoint change in auto mode that still needs to be checked by the AI code
+                assert(change.mode == 1)
 
-            # we need to find out which profile was active at the time of the setpoint change
-            for change in changes:
+                # find out which profile was active at the time of the setpoint change
                 changed_at = pendulum.instance(change.changed_at)
                 daymask = 2 ** (changed_at.day_of_week - 1)
 
@@ -84,9 +87,8 @@ def check_for_changes(config: DBConfiguration):
                     subquery.c.day.op('&')(daymask) != 0
                 ).all()
 
-                if len(schedules) != 1:
-                    # something went wrong as we expect only a single result
-                    continue
+                # we expect exactly one result
+                assert(len(schedules) == 1)
 
                 schedule = schedules[0]
 
@@ -101,19 +103,17 @@ def check_for_changes(config: DBConfiguration):
                 # find the profile where the slot value is less than this slot
                 profile_id = next(filter(lambda entry: entry[0] <= slot, profiles_schedule), None)
 
-                profiles = session.query(
+                profile = session.query(
                     Profile
                 ).filter(
                     Profile.home_id == change.home_id
                 ).filter(
                     Profile.profile_id == profile_id[1]
-                ).all()
+                ).order_by(
+                    Profile.id.desc()
+                ).first()
 
-                if len(profiles) != 1:
-                    # something went wrong as we expect only a single result
-                    continue
-
-                profile = profiles[0]
+                assert(profile is not None)
 
                 # AI COMPONENT
                 # This is where the AI takes over. Note that the code above:
@@ -229,6 +229,6 @@ def cli(config, dbserver, db, username, dbpass_file, debug):  # pylint: disable=
 
 
 if __name__ == "__main__":
-    cli()
+    # cli()
     # for testing in IDE:
-    # cli.callback("full/path/to/settings.toml", None, None, None, None, None)
+    cli.callback("settings.toml", None, None, None, None, None)
