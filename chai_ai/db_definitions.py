@@ -116,6 +116,7 @@ class SetpointChange(Base):
           duration {self.duration}
           mode {self.mode}
           temperature {self.temperature}              
+          price at change {self.price_at_change}     
         """
 
 
@@ -152,6 +153,8 @@ class Profile(Base):
     correlation1 = Column(Float, nullable=False)
     correlation2 = Column(Float, nullable=False)
     noise_precision = Column("noiseprecision", Float, nullable=False)
+    confidence_region = Column(JSON)
+    prediction_banded = Column(JSON)
     home: Home = relationship("Home")
     setpointChange: SetpointChange = relationship("SetpointChange")
 
