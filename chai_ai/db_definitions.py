@@ -176,6 +176,8 @@ class Profile(Base):
              Correlation 1: {self.correlation1}
              Correlation 2: {self.correlation2}
              Noise Precision: {self.noise_precision}
+             Confidence Region: {self.confidence_region}
+             Prediction Banded: {self.prediction_banded}
            """
 
     @property

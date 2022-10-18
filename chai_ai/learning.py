@@ -65,7 +65,7 @@ def confidence_region(covariance_matrix, num_std: float = 2) -> tuple:
     angle = 360 - np.degrees(np.arctan2(*vecs[:, 0][::-1]))  # Angle in degrees, not radians
     width, height = 2 * num_std * np.sqrt(vals)  # Width and height are "full" widths, not radii
 
-    return angle, height, width
+    return int(round(angle, 0)), round(height, 2), round(width, 2)
 
 
 def predict(mean: np.array, covariance_matrix: np.array, noise_precision: float, prices: iter = range(36), confidence: float = 0.99) -> iter:
@@ -93,7 +93,7 @@ def predict(mean: np.array, covariance_matrix: np.array, noise_precision: float,
 
         predictive_confidence_lower, predictive_confidence_upper = stats.norm(loc=predictive_mean, scale=np.sqrt(predictive_variance)).interval(confidence)
 
-        yield predictive_confidence_lower, predictive_mean, predictive_confidence_upper
+        yield round(predictive_confidence_lower, 2), round(predictive_mean, 2), round(predictive_confidence_upper, 2)
 
 
 if __name__ == "__main__":
@@ -136,9 +136,9 @@ if __name__ == "__main__":
     assert updated_profile.correlation1 == -0.024753783781362747
     assert updated_profile.correlation2 == -0.024753783781362733
     assert updated_profile.noise_precision == init_profile.noise_precision
-    assert updated_profile.confidence_region == [181.659861488596, 0.2799433209487951, 3.709097015326712]
+    assert updated_profile.confidence_region == [182, 0.28, 3.71]
     assert updated_profile.prediction_banded[:3] == [
-        [16.907009581503893, 21.96713444650198, 27.027259311500067],
-        [16.830069795435982, 21.8613363583953, 26.892602921354616],
-        [16.74585393436608, 21.755538270288618, 26.765222606211154]
+        [16.91, 21.97, 27.03],
+        [16.83, 21.86, 26.89],
+        [16.75, 21.76, 26.77]
     ]
