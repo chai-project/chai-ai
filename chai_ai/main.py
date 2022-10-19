@@ -5,7 +5,6 @@ import sys
 from time import sleep
 
 import click
-import pendulum
 import schedule as schedule_wake
 import tomli
 from pendulum import instance as pendulum_instance
