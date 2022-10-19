@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long, missing-module-docstring, too-few-public-methods, missing-class-docstring
+
 import numpy as np
 from scipy import stats
 
