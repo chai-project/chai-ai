@@ -207,6 +207,6 @@ def cli(config, dbserver, db, username, dbpass_file, debug):  # pylint: disable=
 
 
 if __name__ == "__main__":
-    # cli()
+    cli()
     # for testing in IDE:
-    cli.callback("settings.toml", None, None, None, None, None)
+    # cli.callback("settings.toml", None, None, None, None, None)
