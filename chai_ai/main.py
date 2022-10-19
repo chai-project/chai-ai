@@ -61,7 +61,6 @@ def check_for_changes(config: DBConfiguration):
             changes: [SetpointChange] = [change for change in changes if change.mode == 1]
 
             for change in changes:
-                print(pendulum.now())
                 # the instance 'change' is a setpoint change in auto mode that still needs to be checked by the AI code
                 assert change.mode == 1
 
