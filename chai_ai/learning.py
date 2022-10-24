@@ -98,13 +98,13 @@ def predict(mean: np.array, covariance_matrix: np.array, noise_precision: float,
         yield round(predictive_confidence_lower, 2), round(predictive_mean, 2), round(predictive_confidence_upper, 2)
 
 
-if __name__ == "__main__":
+def test_correctness():
     init_variance1 = 1
     init_variance2 = 0.01
     init_correlation = 0.001 * np.sqrt(init_variance1) * np.sqrt(init_variance2)
 
     init_profile = Profile(
-        profile_id=None,
+        profile_id=None,  # noqa
         mean1=22,
         mean2=-0.1,
         variance1=init_variance1,
@@ -114,19 +114,19 @@ if __name__ == "__main__":
         noise_precision=0.3333333333333333,
         confidence_region=None,
         prediction_banded=None,
-        home=None,
-        setpointChange=None
+        home=None,  # noqa
+        setpointChange=None  # noqa
     )
 
     init_setpoint_change = SetpointChange(
-        changed_at=None,
-        expires_at=None,
-        checked=None,
-        duration=None,
-        mode=None,
+        changed_at=None,  # noqa
+        expires_at=None,  # noqa
+        checked=None,  # noqa
+        duration=None,  # noqa
+        mode=None,  # noqa
         temperature=20.0,
         price_at_change=17.663,
-        home=None
+        home=None  # noqa
     )
 
     updated_profile = model_update(init_profile, init_setpoint_change)
@@ -144,3 +144,8 @@ if __name__ == "__main__":
         [16.83, 21.86, 26.89],
         [16.75, 21.76, 26.77]
     ]
+
+
+if __name__ == "__main__":
+    # test_correctness()
+    pass
