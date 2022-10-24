@@ -52,12 +52,18 @@ def check_for_changes(config: DBConfiguration):
             # the variable 'changes' contains all setpoint changes that still need to be checked
 
             # manual overrides do not affect the AI, marked them as checked
-            changes_to_manual = [change for change in changes if change.mode in [2, 3]]
-            for change in changes_to_manual:
+            for change in [change for change in changes if change.mode in [2, 3]]:
                 change.checked = True
 
             # what remains are all the setpoint changes in auto mode
-            changes: [SetpointChange] = [change for change in changes if change.mode == 1]
+            # ..setpoint changes that do not set a temperature change should simply be marked as checked
+            for change in [change for change in changes if change.mode == 1 and change.temperature is None]:
+                change.checked = True
+
+            # ..the ones that remain are actual auto mode setpoint changes that affect the profiles
+            changes: [SetpointChange] = [
+                change for change in changes if change.mode == 1 and change.temperature is not None
+            ]
 
             for change in changes:
                 # the instance 'change' is a setpoint change in auto mode that still needs to be checked by the AI code
