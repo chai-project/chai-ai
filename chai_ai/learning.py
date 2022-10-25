@@ -1,6 +1,11 @@
 # pylint: disable=line-too-long, missing-module-docstring, too-few-public-methods, missing-class-docstring
+import os
+import sys
 
+import click
 import numpy as np
+import tomli
+import tomli_w
 from scipy import stats
 
 from chai_ai.db_definitions import Profile, SetpointChange
@@ -96,6 +101,79 @@ def predict(mean: np.array, covariance_matrix: np.array, noise_precision: float,
         predictive_confidence_lower, predictive_confidence_upper = stats.norm(loc=predictive_mean, scale=np.sqrt(predictive_variance)).interval(confidence)
 
         yield round(predictive_confidence_lower, 2), round(predictive_mean, 2), round(predictive_confidence_upper, 2)
+
+
+def config_generator(base_config, num_profiles=5):
+    """
+    Generate a full TOML profile configuration file from a base configuration file containing the minimal set of
+    parameters (i.e. mean, covariance matrix, and noise precision). The full configuration file consists of
+    n=num_profiles identical profiles. An example base configuration file is as follows:
+
+    [profile]
+    mean1             = 23
+    mean2             = -0.05
+    variance1         = 1
+    variance2         = 0.01
+    noiseprecision    = 0.1
+    correlation1      = 0
+    correlation2      = 0
+
+    :param base_config: The location of the base profile configuration file.
+    :param num_profiles: The number of profiles to include in the full configuration file.
+    :return: The TOML string for the full configuration file.
+    """
+    full_config = dict()
+
+    if base_config and not os.path.isfile(base_config):
+        click.echo("The configuration file is not found. Please provide a valid file path.")
+        sys.exit(0)
+
+    if base_config:
+        with open(base_config, "rb") as file:
+            try:
+                base_toml = tomli.load(file)
+
+                mean1 = base_toml["profile"]["mean1"]
+                mean2 = base_toml["profile"]["mean2"]
+                variance1 = base_toml["profile"]["variance1"]
+                variance2 = base_toml["profile"]["variance2"]
+                noise_precision = base_toml["profile"]["noiseprecision"]
+                correlation1 = base_toml["profile"]["correlation1"]
+                correlation2 = base_toml["profile"]["correlation2"]
+
+                mean = np.array([mean1, mean2])
+                covariance_matrix = np.array([[variance1, correlation1], [correlation2, variance2]])
+
+                region_angle, region_width, region_height = confidence_region(covariance_matrix)
+                prediction_banded = [list(prediction) for prediction in predict(mean, covariance_matrix, noise_precision)]
+
+                profile_configs = {
+                    str(i): {  # tomli_w does not support int keys
+                        "mean1": mean1,
+                        "mean2": mean2,
+                        "variance1": variance1,
+                        "variance2": variance2,
+                        "noiseprecision": noise_precision,
+                        "correlation1": correlation1,
+                        "correlation2": correlation2,
+                        "region_angle": region_angle,
+                        "region_width": region_width,
+                        "region_height": region_height,
+                        "prediction_banded": prediction_banded,
+                    } for i in range(1, num_profiles + 1)
+                }
+
+                full_config = {
+                    "profiles": {
+                        "number": num_profiles,
+                        **profile_configs
+                    }
+                }
+            except tomli.TOMLDecodeError:
+                click.echo("The configuration file is not valid and cannot be parsed.")
+                sys.exit(0)
+
+    return tomli_w.dumps(full_config)
 
 
 def test_correctness():
