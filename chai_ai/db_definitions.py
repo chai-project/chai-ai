@@ -76,8 +76,6 @@ class Home(Base):
     label = Column(String, nullable=False)
     revision = Column(TIMESTAMP(timezone=True), nullable=False)
     netatmoID = Column("netatmoid", Integer, ForeignKey("netatmodevice.id"), nullable=False)
-    latitude = Column(Float, nullable=False)
-    longitude = Column(Float, nullable=False)
     relay: NetatmoDevice = relationship("NetatmoDevice")
 
 
