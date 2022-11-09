@@ -7,13 +7,14 @@ from time import sleep
 import click
 import schedule as schedule_wake
 import tomli
+import pendulum
 from pendulum import instance as pendulum_instance
 from schedule import run_pending
 from sqlalchemy import and_
 from sqlalchemy.orm import aliased
 
 from chai_ai.learning import model_update
-from db_definitions import SetpointChange, Schedule, Profile
+from db_definitions import Log, Schedule, SetpointChange, Profile
 from db_definitions import db_engine_manager, db_session_manager, Configuration as DBConfiguration
 
 
@@ -133,6 +134,14 @@ def check_for_changes(config: DBConfiguration):
                 updated_profile = model_update(profile, change)
 
                 session.add(updated_profile)
+                session.add(Log(home_id=change.home_id, timestamp=pendulum.now(), category="PROFILE_UPDATE",
+                                parameters=[
+                                    change.updated_profile.profile_id,
+                                    change.price_at_change,
+                                    change.temperature,
+                                    updated_profile.mean2,
+                                    updated_profile.mean1
+                                ]))
 
                 change.checked = True
 
