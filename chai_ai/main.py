@@ -66,7 +66,11 @@ def check_for_changes(config: DBConfiguration):
                 change for change in changes if change.mode == 1 and change.temperature is not None
             ]
 
-            for change in changes:
+            print(f"preparing to handle {len(changes)} setpoint changes that affect profile models")
+
+            for (idx, change) in enumerate(changes):
+                print(f"  handling setpoint change {idx + 1} of {len(changes)}")
+
                 # the instance 'change' is a setpoint change in auto mode that still needs to be checked by the AI code
                 assert change.mode == 1
 
@@ -142,6 +146,8 @@ def check_for_changes(config: DBConfiguration):
                                     updated_profile.mean2,
                                     updated_profile.mean1
                                 ]))
+
+                print(f"  updated profile {profile.id} for home #{change.home_id}")
 
                 change.checked = True
 
