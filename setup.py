@@ -14,7 +14,6 @@ setup(
                       "sqlalchemy",  # ORM for database access
                       "tomli",  # TOML configuration file parser
                       "tomli-w",  # TOML configuration file writer
-                      "schedule",  # scheduler for periodic tasks
                       "numpy",  # matrix operations for AI algorithm
                       "scipy",  # predictive confidence interval
                       ],

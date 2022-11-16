@@ -5,11 +5,9 @@ import sys
 from time import sleep
 
 import click
-import schedule as schedule_wake
 import tomli
 import pendulum
 from pendulum import instance as pendulum_instance
-from schedule import run_pending
 from sqlalchemy import and_
 from sqlalchemy.orm import aliased
 
@@ -170,11 +168,6 @@ def main(settings: Configuration):
     )
 
     check_for_changes(db_config)
-    schedule_wake.every(5).minutes.do(check_for_changes, config=db_config)
-
-    while True:
-        run_pending()
-        sleep(60)
 
 
 @click.command()
