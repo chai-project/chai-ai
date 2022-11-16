@@ -140,7 +140,7 @@ def check_for_changes(config: DBConfiguration):
                 session.add(updated_profile)
                 session.add(Log(home_id=change.home_id, timestamp=pendulum.now(), category="PROFILE_UPDATE",
                                 parameters=[
-                                    change.updated_profile.profile_id,
+                                    updated_profile.profile_id,
                                     change.price_at_change,
                                     change.temperature,
                                     updated_profile.mean2,
