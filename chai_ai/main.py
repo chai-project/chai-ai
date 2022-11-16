@@ -64,7 +64,10 @@ def check_for_changes(config: DBConfiguration):
                 change for change in changes if change.mode == 1 and change.temperature is not None
             ]
 
-            print(f"preparing to handle {len(changes)} setpoint changes that affect profile models")
+            if changes:
+                print(f"preparing to handle {len(changes)} setpoint changes that affect profile models")
+            else:
+                print(f"no setpoint changes to handle that affect profile models")
 
             for (idx, change) in enumerate(changes):
                 print(f"  handling setpoint change {idx + 1} of {len(changes)}")
