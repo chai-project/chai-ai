@@ -10,6 +10,15 @@ from scipy import stats
 
 from chai_ai.db_definitions import Profile, SetpointChange
 
+PCT_TO_STD = [
+    0.0, 0.01, 0.02, 0.04, 0.05, 0.06, 0.07, 0.09, 0.1, 0.11, 0.12, 0.14, 0.15, 0.16, 0.17, 0.19, 0.2, 0.21, 0.23,
+    0.24, 0.25, 0.26, 0.28, 0.29, 0.3, 0.32, 0.33, 0.34, 0.36, 0.37, 0.38, 0.4, 0.41, 0.42, 0.44, 0.45, 0.47, 0.48,
+    0.49, 0.51, 0.52, 0.54, 0.55, 0.57, 0.58, 0.6, 0.61, 0.63, 0.64, 0.66, 0.67, 0.69, 0.7, 0.72, 0.74, 0.75, 0.77,
+    0.79, 0.8, 0.82, 0.84, 0.86, 0.87, 0.89, 0.91, 0.93, 0.95, 0.97, 1, 1.01, 1.03, 1.05, 1.08, 1.1, 1.12, 1.14, 1.17,
+    1.19, 1.22, 1.24, 1.27, 1.3, 1.32, 1.36, 1.39, 1.43, 1.46, 1.5, 1.54, 1.59, 1.63, 1.67, 1.73, 1.78, 1.85, 1.96,
+    2.01, 2.21, 2.58, 2.81, 3.0
+]
+
 
 def model_update(profile: Profile, setpoint_change: SetpointChange) -> Profile:
     """
@@ -51,17 +60,22 @@ def model_update(profile: Profile, setpoint_change: SetpointChange) -> Profile:
     )
 
 
-def confidence_region(covariance_matrix, num_std: float = 2) -> tuple:
+def confidence_region(covariance_matrix, percentage: int = 95) -> tuple:
     """
     Calculate the width, height, and angle of the confidence region ellipse for a 2D covariance matrix.
 
     https://github.com/joferkington/oost_paper_code/blob/master/error_ellipse.py
 
     :param covariance_matrix: The 2-dimensional covariance matrix.
-    :param num_std: The number of standard deviations to use for the confidence region. Note: we want to use a
-                    confidence level rather than a number of standard deviations.
+    :param percentage: The percentage of the desired confidence interval, in [0, 100].
     :return: The model's mean along with the width, height, and angle of its confidence ellipse.
     """
+    
+    assert 0 <= percentage <= 100
+    
+    # converting between a percentage and a number of standard deviations is not easy because it relies
+    # on a two-sided Gaussian distribution - instead use a table lookup for all values
+    num_std: float = PCT_TO_STD[percentage]
 
     def eigen_sorted(cov):
         vals, vecs = np.linalg.eigh(cov)
@@ -69,7 +83,13 @@ def confidence_region(covariance_matrix, num_std: float = 2) -> tuple:
         return vals[order], vecs[:, order]
 
     vals, vecs = eigen_sorted(covariance_matrix)
-    angle = 360 - np.degrees(np.arctan2(*vecs[:, 0][::-1]))  # Angle in degrees, not radians
+    
+    # the angle returned by this function is the "default" angle which starts at the horizontal at 0°
+    # and then moves counter-clockwise with each 90° representing a quarter
+    
+    # the Graph.js library instead sees 0° as the clockwise noon and moves clockwise
+    # correct for this using the conversion 90 - angle
+    angle = 90 - np.degrees(np.arctan2(*vecs[:, 0][::-1]))  # Angle in degrees, not radians
     width, height = 2 * num_std * np.sqrt(vals)  # Width and height are "full" widths, not radii
 
     return int(round(angle, 0)), round(height, 2), round(width, 2)
