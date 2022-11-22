@@ -77,7 +77,9 @@ def check_for_changes(config: DBConfiguration):
 
                 # find out which profile was active at the time of the setpoint change
                 changed_at = pendulum_instance(change.changed_at)
-                daymask = 2 ** (changed_at.day_of_week - 1)
+                day_of_week = changed_at.day_of_week
+                day_of_week = day_of_week if day_of_week != 0 else 7
+                daymask = 2 ** (day_of_week - 1)
 
                 # get the last schedule for this home with a timestamp before the setpoint change
                 # BE CAREFUL WITH THIS QUERY:
