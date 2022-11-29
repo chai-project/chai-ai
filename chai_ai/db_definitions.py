@@ -103,6 +103,7 @@ class SetpointChange(Base):
     temperature = Column(Float)
     price_at_change = Column("price", Float)
     home: Home = relationship("Home")
+    hidden = Column(Boolean, nullable=False)
 
     def __str__(self):
         return f"""

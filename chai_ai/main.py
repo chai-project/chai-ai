@@ -141,14 +141,15 @@ def check_for_changes(config: DBConfiguration):
                 updated_profile = model_update(profile, change)
 
                 session.add(updated_profile)
-                session.add(Log(home_id=change.home_id, timestamp=pendulum.now(), category="PROFILE_UPDATE",
-                                parameters=[
-                                    updated_profile.profile_id,
-                                    change.price_at_change,
-                                    change.temperature,
-                                    updated_profile.mean2,
-                                    updated_profile.mean1
-                                ]))
+                if not change.hidden:
+                    session.add(Log(home_id=change.home_id, timestamp=pendulum.now(), category="PROFILE_UPDATE",
+                                    parameters=[
+                                        updated_profile.profile_id,
+                                        change.price_at_change,
+                                        change.temperature,
+                                        updated_profile.mean2,
+                                        updated_profile.mean1
+                                    ]))
 
                 print(f"  updated profile {profile.id} for home #{change.home_id}")
 
