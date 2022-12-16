@@ -130,13 +130,12 @@ def config_generator(base_config, num_profiles=5):
     n=num_profiles identical profiles. An example base configuration file is as follows:
 
     [profile]
-    mean1             = 23
-    mean2             = -0.05
-    variance1         = 1
-    variance2         = 0.01
-    noiseprecision    = 0.1
-    correlation1      = 0
-    correlation2      = 0
+    mean1                   = 22
+    mean2                   = -0.245
+    variance1               = 1
+    variance2               = 0.01
+    noiseprecision          = 0.1
+    correlation_coefficient = 0
 
     :param base_config: The location of the base profile configuration file.
     :param num_profiles: The number of profiles to include in the full configuration file.
@@ -158,8 +157,9 @@ def config_generator(base_config, num_profiles=5):
                 variance1 = base_toml["profile"]["variance1"]
                 variance2 = base_toml["profile"]["variance2"]
                 noise_precision = base_toml["profile"]["noiseprecision"]
-                correlation1 = base_toml["profile"]["correlation1"]
-                correlation2 = base_toml["profile"]["correlation2"]
+                covariance = base_toml["profile"]["correlation_coefficient"] * np.sqrt(variance1) * np.sqrt(variance2)
+                correlation1 = covariance
+                correlation2 = covariance
 
                 mean = np.array([mean1, mean2])
                 covariance_matrix = np.array([[variance1, correlation1], [correlation2, variance2]])
