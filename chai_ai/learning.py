@@ -89,7 +89,7 @@ def confidence_region(covariance_matrix, percentage: int = 95) -> tuple:
     
     # the Graph.js library instead sees 0° as the clockwise noon and moves clockwise
     # correct for this using the conversion 90 - angle
-    angle = 90 - np.degrees(np.arctan2(*vecs[:, 0][::-1]))  # Angle in degrees, not radians
+    angle = np.degrees(np.arctan2(*vecs[:, 0][::-1]))  # Angle in degrees, not radians
     width, height = 2 * num_std * np.sqrt(vals)  # Width and height are "full" widths, not radii
 
     return int(round(angle, 0)), round(width, 2), round(height, 2)
