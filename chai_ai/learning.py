@@ -92,7 +92,7 @@ def confidence_region(covariance_matrix, percentage: int = 95) -> tuple:
     angle = 90 - np.degrees(np.arctan2(*vecs[:, 0][::-1]))  # Angle in degrees, not radians
     width, height = 2 * num_std * np.sqrt(vals)  # Width and height are "full" widths, not radii
 
-    return int(round(angle, 0)), round(height, 2), round(width, 2)
+    return int(round(angle, 0)), round(width, 2), round(height, 2)
 
 
 def predict(mean: np.array, covariance_matrix: np.array, noise_precision: float, prices: iter = range(36), confidence: float = 0.99) -> iter:
