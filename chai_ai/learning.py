@@ -60,7 +60,7 @@ def model_update(profile: Profile, setpoint_change: SetpointChange) -> Profile:
     )
 
 
-def confidence_region(covariance_matrix, percentage: int = 95) -> tuple:
+def confidence_region(covariance_matrix, percentage: int = 99) -> tuple:
     """
     Calculate the width, height, and angle of the confidence region ellipse for a 2D covariance matrix.
 
