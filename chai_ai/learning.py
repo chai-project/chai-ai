@@ -134,8 +134,8 @@ def config_generator(base_config, num_profiles=5):
     mean2                   = -0.245
     variance1               = 1
     variance2               = 0.01
-    noiseprecision          = 0.1
-    correlation_coefficient = 0
+    noiseprecision          = 0.33
+    correlation_coefficient = -0.3
 
     :param base_config: The location of the base profile configuration file.
     :param num_profiles: The number of profiles to include in the full configuration file.
